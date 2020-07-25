@@ -28,7 +28,7 @@ EOF
   exit 1
 }
 
-while getopts ":a:z:r:n:t:T:" opt; do
+while getopts ":a:z:r:n:tT" opt; do
   case "$opt" in
     a )
       auth_api_token="${OPTARG}"
@@ -48,15 +48,9 @@ while getopts ":a:z:r:n:t:T:" opt; do
     T )
       record_type="${OPTARG}"
       ;;
-    h|* )
+    h )
       display_help
       ;;
-    \? )
-      echo "Invalid Option: -$OPTARG" 
-      echo "use -h for help"
-      exit 1
-      ;;
-    
   esac
 done
 
