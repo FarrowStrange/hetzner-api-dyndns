@@ -6,6 +6,9 @@ auth_api_token=''
 record_ttl='60'
 record_type='A'
 
+cur_pub_addr=`curl -s https://ifconfig.me`
+cur_dyn_addr=`curl -s "https://dns.hetzner.com/api/v1/records/${record_id}" -H 'Auth-API-Token: '${auth_api_token} | cut -d ',' -f 4 | cut -d '"' -f 4`
+
 
 display_help() {
   cat <<EOF
@@ -64,14 +67,12 @@ if [[ "${auth_api_token}" = "" ]]; then
   exit 1
 fi
 
-cur_pub_addr=`curl -s ifconfig.me`
-cur_dyn_addr=`curl -s "https://dns.hetzner.com/api/v1/records/${record_id}" -H 'Auth-API-Token: '${auth_api_token} | cut -d ',' -f 4 | cut -d '"' -f 4`
 
 if [[ $cur_pub_addr == $cur_dyn_addr ]]; then
-  echo "DNS record is up to date - nothing to to."
+  echo "DNS record "${record_name}" is up to date - nothing to to."
   exit 0
 else
-  echo "DNS record is no longer valid - updating record" 
+  echo "DNS record "${record_name}" is no longer valid - updating record" 
 
   curl -s -X "PUT" "https://dns.hetzner.com/api/v1/records/${record_id}" \
     -H 'Content-Type: application/json' \
@@ -85,8 +86,8 @@ else
     }'
 
   if [[ $? != 0 ]]; then
-    echo "Unable to update record"
+    echo "Unable to update record: "${record_name}""
   else
-    echo "DNS record updated successfully"
+    echo "DNS record "${record_name}" updated successfully"
   fi
 fi
