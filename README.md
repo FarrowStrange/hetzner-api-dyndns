@@ -48,9 +48,9 @@ As soon as the token is deposited, the script can be called with the appropriate
 
 To keep your DynDNS Records up to date, you have to create a cronjob that calls the script periodically. 
 
-**Example:** Check DynDNS every 5 Minutes
+**Example:** Check every 5 Minutes and update if necessary.
 ```
-*/5 0 * * * /usb/bin/dyndns.sh -z 98jFjsd8dh1GHasdf7a8hJG7 -r AHD82h347fGAF1 -n dyn
+*/5 * * * * /usr/bin/dyndns.sh -z 98jFjsd8dh1GHasdf7a8hJG7 -r AHD82h347fGAF1 -n dyn
 ```
 
 # Help
