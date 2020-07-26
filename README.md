@@ -56,7 +56,7 @@ To keep your DynDNS Records up to date, you have to create a cronjob that calls 
 # Help
 Type `-h` to display help page.
 ```
-./dyndns -h
+./dyndns.sh -h
 ```
 ```
 exec: ./dyndns.sh -z <Zone ID> -r <Record ID> -n <Record Name>
