@@ -24,7 +24,7 @@ help:
   -h  - Show Help 
 
 example:
-  .exec: ./dyndns.sh -z 98jFjsd8dh1GH7 -r AHD82h347fGAF1 -n dyn
+  .exec: ./dyndns.sh -z 98jFjsd8dh1GHasdf7a8hJG7 -r AHD82h347fGAF1 -n dyn
 
 EOF
   exit 1
