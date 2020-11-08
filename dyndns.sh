@@ -63,8 +63,14 @@ if [[ "${auth_api_token}" = "" ]]; then
   exit 1
 fi
 
+if [[ "${record_type}" = "AAAA" ]]; then
+  echo "Using IPv6 as AAAA record is to be set."
+  cur_pub_addr=`curl -6 -s https://ifconfig.co`
+else
+  echo "Using IPv4 as record type ${record_type} is not explicitly AAAA."
+  cur_pub_addr=`curl -4 -s https://ifconfig.co`
+fi
 
-cur_pub_addr=`curl -s https://ifconfig.me`
 cur_dyn_addr=`curl -s "https://dns.hetzner.com/api/v1/records/${record_id}" -H 'Auth-API-Token: '${auth_api_token} | cut -d ',' -f 4 | cut -d '"' -f 4`
 
 if [[ $cur_pub_addr == $cur_dyn_addr ]]; then
