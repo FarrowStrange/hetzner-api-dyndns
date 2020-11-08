@@ -67,7 +67,7 @@ if [[ "${record_type}" = "AAAA" ]]; then
   echo "Using IPv6 as AAAA record is to be set."
   cur_pub_addr=`curl -6 -s https://ifconfig.co`
 else
-  echo "Using IPv4 as record type ${record_type} is not explictly AAAA."
+  echo "Using IPv4 as record type ${record_type} is not explicitly AAAA."
   cur_pub_addr=`curl -4 -s https://ifconfig.co`
 fi
 
