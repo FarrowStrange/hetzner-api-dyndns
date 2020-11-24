@@ -3,7 +3,6 @@
 
 import argparse
 
-# Create the parser
 api_parser = argparse.ArgumentParser(description='DynDNS Python Script for Hetzner DNS API:')
 positional_group = api_parser.add_argument_group('positional arguments')
 
