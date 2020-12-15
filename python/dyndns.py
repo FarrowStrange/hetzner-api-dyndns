@@ -1,7 +1,7 @@
 # DynDNS Script for Hetzner DNS API by FarrowStrange
 # v1.0
 
-api_token = ""
+api_token = "hF11Hn5VXVS9HKm8n19FULZa7lSwp6xK"
 
 
 import argparse
@@ -23,22 +23,21 @@ def get_record():
 
 def update_record():
   try:
-    response = requests.put(
+    payload_dict = {
+      "value": pub_addr,
+      "ttl": args.ttl,
+      "type": args.type,
+      "name": args.name,
+      "zone_id": args.zone,
+    }
+    requests.put(
       url=f"https://dns.hetzner.com/api/v1/records/{args.record}",
       headers={
         "Content-Type": "application/json",
         "Auth-API-Token": f"{api_token}",
       },
-      data=json.dumps({
-        "value": f"{pub_addr}",
-        "ttl": 0,
-        "type": f"{args.type}",
-        "name": f"{args.name}",
-        "zone_id": f"{args.zone}"
-      })
+      data=json.dumps(payload_dict)
     )
-    print('Response HTTP Response Body: {content}'.format(
-      content=response.content))
   except requests.exceptions.RequestException:
       print('HTTP Request failed')
 
@@ -60,7 +59,8 @@ positional_group.add_argument('-n','--name',
                               help='Record Name')
 api_parser.add_argument('-t','--ttl',
                         metavar='',
-                        default='60',
+                        type=int,
+                        default=60,
                         help='TTL (Default: 60)')
 api_parser.add_argument('-T','--type',
                         metavar='',
@@ -74,3 +74,7 @@ if not api_token:
 
 pub_addr_info = json.loads(urllib.request.urlopen('https://ifconfig.me/all.json').read().decode('utf-8'))
 pub_addr = pub_addr_info['ip_addr']
+
+
+print(args.ttl)
+update_record ()
