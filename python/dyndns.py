@@ -74,7 +74,3 @@ if not api_token:
 
 pub_addr_info = json.loads(urllib.request.urlopen('https://ifconfig.me/all.json').read().decode('utf-8'))
 pub_addr = pub_addr_info['ip_addr']
-
-
-print(args.ttl)
-update_record ()
