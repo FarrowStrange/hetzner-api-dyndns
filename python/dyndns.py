@@ -10,38 +10,6 @@ import urllib.request
 import requests
 
 
-def get_record():
-  try:
-    response = requests.get(
-      url=f"https://dns.hetzner.com/api/v1/records/{args.record}",
-      headers={"Auth-API-Token": f"{api_token}"},
-    )
-    print('{content}'.format(
-      content=response.content))
-  except requests.exceptions.RequestException:
-    print('HTTP Request failed')
-
-def update_record():
-  try:
-    payload_dict = {
-      "value": pub_addr,
-      "ttl": args.ttl,
-      "type": args.type,
-      "name": args.name,
-      "zone_id": args.zone,
-    }
-    requests.put(
-      url=f"https://dns.hetzner.com/api/v1/records/{args.record}",
-      headers={
-        "Content-Type": "application/json",
-        "Auth-API-Token": f"{api_token}",
-      },
-      data=json.dumps(payload_dict)
-    )
-  except requests.exceptions.RequestException:
-      print('HTTP Request failed')
-
-
 api_parser = argparse.ArgumentParser(description='DynDNS Python Script for Hetzner DNS API:')
 positional_group = api_parser.add_argument_group('positional arguments')
 
@@ -72,5 +40,28 @@ if not api_token:
     print("No Auth API Token specified. Please reference at the top of the Script.")
     exit(1)
 
-pub_addr_info = json.loads(urllib.request.urlopen('https://ifconfig.me/all.json').read().decode('utf-8'))
-pub_addr = pub_addr_info['ip_addr']
+public_ip = json.loads(urllib.request.urlopen('https://ifconfig.me/all.json').read().decode('utf-8'))['ip_addr']
+current_record = requests.get(
+      url=f"https://dns.hetzner.com/api/v1/records/{args.record}",
+      headers={"Auth-API-Token": f"{api_token}"},
+    )
+current_ip = (json.loads(current_record.content.decode('utf-8'))['record'])['value']
+
+if current_ip != public_ip:
+  print(f"DNS record {args.name} is no longer valid - updating record" )
+  requests.put(
+    url=f"https://dns.hetzner.com/api/v1/records/{args.record}",
+    headers={
+      "Content-Type": "application/json",
+      "Auth-API-Token": f"{api_token}",
+    },
+    data=json.dumps({
+                  "value": f"{public_ip}",
+                  "ttl": args.ttl,
+                  "type": f"{args.type}",
+                  "name": f"{args.name}",
+                  "zone_id": f"{args.zone}"
+              })
+  )
+else:
+  print(f"DNS record {args.name} is up to date - nothing to to.")
