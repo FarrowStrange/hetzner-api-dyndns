@@ -56,12 +56,12 @@ if current_ip != public_ip:
       "Auth-API-Token": f"{api_token}",
     },
     data=json.dumps({
-                  "value": f"{public_ip}",
-                  "ttl": args.ttl,
-                  "type": f"{args.type}",
-                  "name": f"{args.name}",
-                  "zone_id": f"{args.zone}"
-              })
+      "value": f"{public_ip}",
+      "ttl": args.ttl,
+      "type": f"{args.type}",
+      "name": f"{args.name}",
+      "zone_id": f"{args.zone}"
+    })
   )
 else:
   print(f"DNS record {args.name} is up to date - nothing to to.")
