@@ -1,7 +1,7 @@
 # DynDNS Script for Hetzner DNS API by FarrowStrange
 # v1.0
 
-api_token = "hF11Hn5VXVS9HKm8n19FULZa7lSwp6xK"
+api_token = ""
 
 
 import argparse
