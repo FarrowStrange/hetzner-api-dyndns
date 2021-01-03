@@ -15,10 +15,11 @@ To query the API the small program [jq](https://stedolan.github.io/jq/) is used.
 First, a new access token must be created in the [Hetzner DNS Console](https://dns.hetzner.com/). This should be copied immediately, because for security reasons it will not be possible to display the token later. But you can generate as many tokens as you like.
 
 # Usage
-For security reasons, the access token is stored directly in the script. Enter your previously created token here.
+You store your Access Token either in the script or set it as an OS environment variable. To store it in the script replace `<your-hetzner-dns-api-token>` in the following line in the script.
+
 ```
 ...
-auth_api_token=''
+auth_api_token=${HETZNER_AUTH_API_TOKEN:-'<your-hetzner-dns-api-token>'}
 ...
 ```
 
@@ -31,8 +32,23 @@ To keep your DynDNS Records up to date, you have to create a cronjob that calls 
 
 **Example:** Check every 5 Minutes and update if necessary.
 ```
+HETZNER_ZONE_NAME='example.com'
+HETZNER_AUTH_API_TOKEN='<your-hetzner-dns-api-token>'
+
 */5 * * * * /usr/bin/dyndns.sh -Z example.com -n dyn
 ```
+# OS Environment Variables
+
+You can use the following enviroment variables.
+
+|NAME                   | Value                            | Description                                                     |
+|:----------------------|----------------------------------|:----------------------------------------------------------------|
+|HETZNER_AUTH_API_TOKEN | 925bf046408b55c313740eef2bc18b1e | Your Hetzner API access token                                   |
+|HETZNER_ZONE_NAME      | example.com                      | The zone name                                                   |
+|HETZNER_ZONE_ID        | DaGaoE6YzDTQHKxrtzfkTx           | The zone ID. Use either the zone name or the zone ID. Not both. |
+|HETZNER_RECORD_NAME    | dyn                              | The record name. '@' to set the record for the zone itself.     |
+|HETZNER_RECORD_TTL     | 120                              | The TTL of the record. Default(60)                              |
+|HETZNER_RECORD_TYPE    | AAAA                             | The record type. Either A fpr IPv4 or AAAA for IPv6. Default(A) |
 
 # Help
 Type `-h` to display help page.

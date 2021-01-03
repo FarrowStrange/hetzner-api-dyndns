@@ -2,9 +2,15 @@
 # DynDNS Script for Hetzner DNS API by FarrowStrange
 # v1.1
 
-auth_api_token=''
-record_ttl='60'
-record_type='A'
+# get OS environment variables
+auth_api_token=${HETZNER_AUTH_API_TOKEN:-'<your-hetzner-dns-api-token>'}
+
+zone_name=${HETZNER_ZONE_NAME:-''}
+zone_id=${HETZNER_ZONE_ID:-''}
+
+record_name=${HETZNER_RECORD_NAME:-''}
+record_ttl=${HETZNER_RECORD_TTL:-'60'}
+record_type=${HETZNER_RECORD_TYPE:-'A'}
 
 display_help() {
   cat <<EOF
@@ -36,7 +42,7 @@ EOF
 }
 
 logger() {
-  echo ${1}: $(date) : ${2}
+  echo ${1}: Record_Name: ${record_name} : ${2}
 }
 while getopts ":z:Z:r:n:t:T:h:" opt; do
   case "$opt" in
@@ -113,7 +119,6 @@ if [[ "${record_id}" = "" ]]; then
                    jq --raw-output '.records[] | select(.type == "'${record_type}'") | select(.name == "'${record_name}'") | .id')
 fi 
 
-logger Info "Record_Name: ${record_name}"
 logger Info "Record_ID: ${record_id}"
 
 # create a new record
