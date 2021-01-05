@@ -44,7 +44,7 @@ EOF
 logger() {
   echo ${1}: Record_Name: ${record_name} : ${2}
 }
-while getopts ":z:Z:r:n:t:T:h:" opt; do
+while getopts ":z:Z:r:n:t:T:h" opt; do
   case "$opt" in
     z  ) zone_id="${OPTARG}";;
     Z  ) zone_name="${OPTARG}";;
