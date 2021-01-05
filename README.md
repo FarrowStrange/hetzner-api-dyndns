@@ -30,13 +30,25 @@ As soon as the token is deposited, the script can be called with the appropriate
 
 To keep your DynDNS Records up to date, you have to create a cronjob that calls the script periodically. 
 
-**Example:** Check every 5 Minutes and update if necessary.
+**Examples:**
+You have several possibilities to call the script. In these examples it is called periodically every 5 minutes and updates the DNS entry if necessary.
+
+In the first example only the API token is passed as environment variable and the remaining information as parameters. This allows for example to set multiple DynDNS entries in different zones when the script is called multiple times with different parameters.
 ```
-HETZNER_ZONE_NAME='example.com'
 HETZNER_AUTH_API_TOKEN='<your-hetzner-dns-api-token>'
 
 */5 * * * * /usr/bin/dyndns.sh -Z example.com -n dyn
 ```
+
+You can also pass all information as an environment variables to create a DynDNS entry.
+```
+HETZNER_AUTH_API_TOKEN='<your-hetzner-dns-api-token>'
+HETZNER_ZONE_NAME='example.com'
+HETZNER_RECORD_NAME='dyn'
+
+*/5 * * * * /usr/bin/dyndns.sh
+```
+
 # OS Environment Variables
 
 You can use the following enviroment variables.
