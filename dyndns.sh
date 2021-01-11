@@ -96,16 +96,32 @@ if [[ "${record_name}" = "" ]]; then
   exit 1
 fi
 
+ipv4_regex="[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}"
+ipv6_regex="(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))"
+
 if [[ "${record_type}" = "AAAA" ]]; then
   logger Info "Using IPv6 as AAAA record is to be set."
   cur_pub_addr=$(curl -6 -s https://ifconfig.co)
-  if [[ "${cur_pub_addr}" = "" ]]; then
-    logger Error "It seems you don't have a IPv6 public address."
-    exit 1
+  if [[ ${cur_pub_addr} =~ ^${ipv6_regex}$ ]]; then
+	  echo "Your current public IPv6 address: ${pub_curr_addr}"
+  else
+  	if [[ "${cur_pub_addr}" = "" ]]; then
+    	logger Error "It seems you don't have a IPv6 public address."
+	else 
+		logger Error "Something went wrong getting your public IP address. (Probably Cloudflare captchas)"
+  	fi
+	exit 1
   fi
+
 elif [[ "${record_type}" = "A" ]]; then
   logger Info "Using IPv4 as record type ${record_type} is not explicitly AAAA."
   cur_pub_addr=$(curl -4 -s https://ifconfig.co)
+  if  [[ ${cur_pub_addr} =~ ^${ipv4_regex}$ ]]; then
+	  echo "Your current public IP address: ${cur_pub_addr}" 
+  else
+	 logger Error "Something went wrong getting your public IP address. (Probably Cloudflare captchas)"
+	 exit 1
+  fi	
 else 
   logger Error "Only record type \"A\" or \"AAAA\" are support for DynDNS."
   exit 1
