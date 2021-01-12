@@ -59,6 +59,13 @@ while getopts ":z:Z:r:n:t:T:h" opt; do
   esac
 done
 
+# Check if jq is installed
+if ! command -v jq &> /dev/null; then
+  logger Error "To run the script 'jq' is needed, but it seems not to be installed."
+  logger Error "Please install 'jq' and try again."
+  exit 1
+fi
+
 # Check if api token is set 
 if [[ "${auth_api_token}" = "" ]]; then
   logger Error "No Auth API Token specified. Please reference at the top of the Script."
