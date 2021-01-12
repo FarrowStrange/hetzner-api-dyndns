@@ -59,6 +59,7 @@ while getopts ":z:Z:r:n:t:T:h" opt; do
   esac
 done
 
+# Check if api token is set 
 if [[ "${auth_api_token}" = "" ]]; then
   logger Error "No Auth API Token specified. Please reference at the top of the Script."
   exit 1
@@ -103,10 +104,18 @@ if [[ "${record_type}" = "AAAA" ]]; then
   if [[ "${cur_pub_addr}" = "" ]]; then
     logger Error "It seems you don't have a IPv6 public address."
     exit 1
+  else
+    logger Info "Current public IP address: ${cur_dyn_addr}"
   fi
 elif [[ "${record_type}" = "A" ]]; then
   logger Info "Using IPv4 as record type ${record_type} is not explicitly AAAA."
   cur_pub_addr=$(dig -4 ch TXT +short whoami.cloudflare @1.1.1.1 | awk -F '"' '{print $2}')
+  if [[ "${cur_pub_addr}" = "" ]]; then
+    logger Error "Apparently there is a problem in determining the public ip address."
+    exit 1
+  else
+    logger Info "Current public IP address: ${cur_dyn_addr}"
+  fi
 else 
   logger Error "Only record type \"A\" or \"AAAA\" are support for DynDNS."
   exit 1
@@ -139,7 +148,7 @@ else
 # check if update is needed
     cur_dyn_addr=`curl -s "https://dns.hetzner.com/api/v1/records/${record_id}" -H 'Auth-API-Token: '${auth_api_token} | jq --raw-output '.record.value'`
 
-logger Info "Current public IP Address: ${cur_dyn_addr}"
+logger Info "Currently set IP address: ${cur_dyn_addr}"
 
 # update existing record
     if [[ $cur_pub_addr == $cur_dyn_addr ]]; then
