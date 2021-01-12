@@ -62,7 +62,7 @@ done
 # Check if jq is installed
 if ! command -v jq &> /dev/null; then
   logger Error "To run the script 'jq' is needed, but it seems not to be installed."
-  logger Error "Please install 'jq' and try again."
+  logger Error "Please check 'https://github.com/FarrowStrange/hetzner-api-dyndns#install-jq' and try again."
   exit 1
 fi
 
