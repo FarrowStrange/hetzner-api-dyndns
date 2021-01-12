@@ -105,7 +105,7 @@ if [[ "${record_type}" = "AAAA" ]]; then
     logger Error "It seems you don't have a IPv6 public address."
     exit 1
   else
-    logger Info "Current public IP address: ${cur_dyn_addr}"
+    logger Info "Current public IP address: ${cur_pub_addr}"
   fi
 elif [[ "${record_type}" = "A" ]]; then
   logger Info "Using IPv4 as record type ${record_type} is not explicitly AAAA."
@@ -114,7 +114,7 @@ elif [[ "${record_type}" = "A" ]]; then
     logger Error "Apparently there is a problem in determining the public ip address."
     exit 1
   else
-    logger Info "Current public IP address: ${cur_dyn_addr}"
+    logger Info "Current public IP address: ${cur_pub_addr}"
   fi
 else 
   logger Error "Only record type \"A\" or \"AAAA\" are support for DynDNS."
