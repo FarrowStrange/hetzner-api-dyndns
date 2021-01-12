@@ -96,16 +96,17 @@ if [[ "${record_name}" = "" ]]; then
   exit 1
 fi
 
+# get current public ip address
 if [[ "${record_type}" = "AAAA" ]]; then
   logger Info "Using IPv6 as AAAA record is to be set."
-  cur_pub_addr=$(curl -6 -s https://ifconfig.co)
+  cur_pub_addr=$(dig -6 ch TXT +short whoami.cloudflare @2606:4700:4700::1111 | awk -F '"' '{print $2}')
   if [[ "${cur_pub_addr}" = "" ]]; then
     logger Error "It seems you don't have a IPv6 public address."
     exit 1
   fi
 elif [[ "${record_type}" = "A" ]]; then
   logger Info "Using IPv4 as record type ${record_type} is not explicitly AAAA."
-  cur_pub_addr=$(curl -4 -s https://ifconfig.co)
+  cur_pub_addr=$(dig -4 ch TXT +short whoami.cloudflare @1.1.1.1 | awk -F '"' '{print $2}')
 else 
   logger Error "Only record type \"A\" or \"AAAA\" are support for DynDNS."
   exit 1
