@@ -62,7 +62,7 @@ done
 # Check if jq is installed
 if ! command -v jq &> /dev/null; then
   logger Error "To run the script 'jq' is needed, but it seems not to be installed."
-  logger Error "Please check 'https://github.com/FarrowStrange/hetzner-api-dyndns#install-jq' and try again."
+  logger Error "Please check 'https://github.com/FarrowStrange/hetzner-api-dyndns#install-jq' for more informations and try again."
   exit 1
 fi
 
@@ -106,7 +106,7 @@ fi
 
 # get current public ip address
 if [[ "${record_type}" = "AAAA" ]]; then
-  logger Info "Using IPv6 as AAAA record is to be set."
+  logger Info "Using IPv6, because AAAA was set as record type."
   cur_pub_addr=$(dig -6 ch TXT +short whoami.cloudflare @2606:4700:4700::1111 | awk -F '"' '{print $2}')
   if [[ "${cur_pub_addr}" = "" ]]; then
     logger Error "It seems you don't have a IPv6 public address."
@@ -115,7 +115,7 @@ if [[ "${record_type}" = "AAAA" ]]; then
     logger Info "Current public IP address: ${cur_pub_addr}"
   fi
 elif [[ "${record_type}" = "A" ]]; then
-  logger Info "Using IPv4 as record type ${record_type} is not explicitly AAAA."
+  logger Info "Using IPv4, because A was set as record type."
   cur_pub_addr=$(dig -4 ch TXT +short whoami.cloudflare @1.1.1.1 | awk -F '"' '{print $2}')
   if [[ "${cur_pub_addr}" = "" ]]; then
     logger Error "Apparently there is a problem in determining the public ip address."
