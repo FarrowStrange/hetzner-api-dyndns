@@ -162,7 +162,7 @@ logger Info "Currently set IP address: ${cur_dyn_addr}"
         logger Info "DNS record \"${record_name}\" is up to date - nothing to to."
         exit 0
     else
-        echo "DNS record \"${record_name}\" is no longer valid - updating record" 
+        logger Info "DNS record \"${record_name}\" is no longer valid - updating record" 
         curl -s -X "PUT" "https://dns.hetzner.com/api/v1/records/${record_id}" \
              -H 'Content-Type: application/json' \
              -H 'Auth-API-Token: '${auth_api_token} \
