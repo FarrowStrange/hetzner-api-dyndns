@@ -59,12 +59,14 @@ while getopts ":z:Z:r:n:t:T:h" opt; do
   esac
 done
 
-# Check if jq is installed
-if ! command -v jq &> /dev/null; then
-  logger Error "To run the script 'jq' is needed, but it seems not to be installed."
-  logger Error "Please check 'https://github.com/FarrowStrange/hetzner-api-dyndns#install-jq' for more informations and try again."
-  exit 1
-fi
+# Check if tools are installed
+for cmd in curl dig jq; do
+  if ! command -v "${cmd}" &> /dev/null; then
+    logger Error "To run the script '${cmd}' is needed, but it seems not to be installed."
+    logger Error "Please check 'https://github.com/FarrowStrange/hetzner-api-dyndns#install-jq' for more informations and try again."
+    exit 1
+  fi
+done
 
 # Check if api token is set 
 if [[ "${auth_api_token}" = "" ]]; then
