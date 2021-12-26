@@ -15,6 +15,8 @@ To query the API the small program [jq](https://stedolan.github.io/jq/) is used.
 First, a new access token must be created in the [Hetzner DNS Console](https://dns.hetzner.com/). This should be copied immediately, because for security reasons it will not be possible to display the token later. But you can generate as many tokens as you like.
 
 # Usage
+
+## Script
 You store your Access Token either in the script or set it as an OS environment variable. To store it in the script replace `<your-hetzner-dns-api-token>` in the following line in the script.
 
 ```
@@ -47,6 +49,28 @@ HETZNER_ZONE_NAME='example.com'
 HETZNER_RECORD_NAME='dyn'
 
 */5 * * * * /usr/bin/dyndns.sh
+```
+
+## Docker
+Build:
+```sh
+docker build -t dyndns-hetzner .
+```
+
+Run:
+```sh
+docker run -e HETZNER_AUTH_API_TOKEN='<your-hetzner-dns-api-token>' dyndns-hetzner -Z example.com -n dyn
+
+# OR
+
+docker run -e HETZNER_AUTH_API_TOKEN='<your-hetzner-dns-api-token>' -e HETZNER_ZONE_NAME='example.com' -e HETZNER_RECORD_NAME='dyn' dyndns-hetzner
+```
+
+or via cron job:
+```sh
+HETZNER_AUTH_API_TOKEN='<your-hetzner-dns-api-token>'
+
+*/5 * * * * docker run -e HETZNER_AUTH_API_TOKEN dyndns-hetzner -Z example.com -n dyn
 ```
 
 # OS Environment Variables
