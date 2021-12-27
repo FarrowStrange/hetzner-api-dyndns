@@ -1,6 +1,6 @@
 #!/bin/bash
 # DynDNS Script for Hetzner DNS API by FarrowStrange
-# v1.1
+# v1.2
 
 # get OS environment variables
 auth_api_token=${HETZNER_AUTH_API_TOKEN:-'<your-hetzner-dns-api-token>'}
@@ -31,7 +31,7 @@ help:
   -h  - Show Help 
 
 requirements:
-jq is required to run this scriptcd .
+curl, dig and jq are required to run this script.
 
 example:
   .exec: ./dyndns.sh -z 98jFjsd8dh1GHasdf7a8hJG7 -r AHD82h347fGAF1 -n dyn
@@ -63,7 +63,7 @@ done
 for cmd in curl dig jq; do
   if ! command -v "${cmd}" &> /dev/null; then
     logger Error "To run the script '${cmd}' is needed, but it seems not to be installed."
-    logger Error "Please check 'https://github.com/FarrowStrange/hetzner-api-dyndns#install-jq' for more informations and try again."
+    logger Error "Please check 'https://github.com/FarrowStrange/hetzner-api-dyndns#install-tools' for more informations and try again."
     exit 1
   fi
 done
