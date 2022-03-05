@@ -52,6 +52,20 @@ HETZNER_RECORD_NAME='dyn'
 */5 * * * * /usr/bin/dyndns.sh
 ```
 
+# Docker usage
+
+The docker container can take care of the cron process.
+
+Docker usage requires one additional variable `CRON_SCHEDULE`.
+Docker environment variables have to be defined in `.env` file. (see `.env.dist` for structure).
+
+1. Prepare .env file
+2. Run docker image using docker compose in the project directory.
+
+```shell
+docker-compose up -d
+```
+
 # OS Environment Variables
 
 You can use the following enviroment variables.
