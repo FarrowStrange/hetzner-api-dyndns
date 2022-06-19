@@ -3,7 +3,7 @@
 # v1.2
 
 # get OS environment variables
-auth_api_token=${HETZNER_AUTH_API_TOKEN:-'<your-hetzner-dns-api-token>'}
+auth_api_token=${HETZNER_AUTH_API_TOKEN:-''}
 
 zone_name=${HETZNER_ZONE_NAME:-''}
 zone_id=${HETZNER_ZONE_ID:-''}
@@ -70,7 +70,7 @@ done
 
 # Check if api token is set 
 if [[ "${auth_api_token}" = "" ]]; then
-  logger Error "No Auth API Token specified. Please reference at the top of the Script."
+  logger Error "No Auth API Token specified."
   exit 1
 fi
 
