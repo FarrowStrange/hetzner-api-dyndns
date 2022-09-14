@@ -62,6 +62,7 @@ You can use the following enviroment variables.
 |HETZNER_ZONE_NAME      | example.com                      | The zone name                                                   |
 |HETZNER_ZONE_ID        | DaGaoE6YzDTQHKxrtzfkTx           | The zone ID. Use either the zone name or the zone ID. Not both. |
 |HETZNER_RECORD_NAME    | dyn                              | The record name. '@' to set the record for the zone itself.     |
+|HETZNER_RECORD_ID      | 92ab994bfcef16e5fd73a7974f12a179 | The record ID. Use either the record name or the record ID.     |
 |HETZNER_RECORD_TTL     | 120                              | The TTL of the record. Default(60)                              |
 |HETZNER_RECORD_TYPE    | AAAA                             | The record type. Either A for IPv4 or AAAA for IPv6. Default(A) |
 

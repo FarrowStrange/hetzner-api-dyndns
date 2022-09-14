@@ -9,6 +9,7 @@ zone_name=${HETZNER_ZONE_NAME:-''}
 zone_id=${HETZNER_ZONE_ID:-''}
 
 record_name=${HETZNER_RECORD_NAME:-''}
+record_id=${HETZNER_RECORD_ID:-''}
 record_ttl=${HETZNER_RECORD_TTL:-'60'}
 record_type=${HETZNER_RECORD_TYPE:-'A'}
 
@@ -100,8 +101,9 @@ fi
 logger Info "Zone_ID: ${zone_id}"
 logger Info "Zone_Name: ${zone_name}"
 
-if [[ "${record_name}" = "" ]]; then
+if [[ "${record_name}" = "" ]]&&[[ "${record_id}" = "" ]]; then
   logger Error "Mission option for record name: -n <Record Name>"
+  logger Error "Mission option for record id: -r <Record ID>"
   logger Error "Use -h to display help."
   exit 1
 fi
