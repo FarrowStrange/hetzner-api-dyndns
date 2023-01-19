@@ -31,7 +31,7 @@ help:
   -h  - Show Help 
 
 requirements:
-curl, dig and jq are required to run this script.
+curl, dig, jq and awk are required to run this script.
 
 example:
   .exec: ./dyndns.sh -z 98jFjsd8dh1GHasdf7a8hJG7 -r AHD82h347fGAF1 -n dyn
@@ -60,7 +60,7 @@ while getopts ":z:Z:r:n:t:T:h" opt; do
 done
 
 # Check if tools are installed
-for cmd in curl dig jq; do
+for cmd in curl dig jq awk; do
   if ! command -v "${cmd}" &> /dev/null; then
     logger Error "To run the script '${cmd}' is needed, but it seems not to be installed."
     logger Error "Please check 'https://github.com/FarrowStrange/hetzner-api-dyndns#install-tools' for more informations and try again."
