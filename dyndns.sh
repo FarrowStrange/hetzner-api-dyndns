@@ -1,6 +1,6 @@
 #!/bin/bash
 # DynDNS Script for Hetzner DNS API by FarrowStrange
-# v1.2
+# v1.3
 
 # get OS environment variables
 auth_api_token=${HETZNER_AUTH_API_TOKEN:-''}
@@ -11,11 +11,16 @@ zone_id=${HETZNER_ZONE_ID:-''}
 record_name=${HETZNER_RECORD_NAME:-''}
 record_ttl=${HETZNER_RECORD_TTL:-'60'}
 record_type=${HETZNER_RECORD_TYPE:-'A'}
+localserver=${LOCALSERVERFILE:-'server.json'}
+ext_ip_resolver_type=${HETZNER_EXT_IP_RESOLVER_TYPE:-'who-am-i'}
+ext_ip_resolver=${HETZNER_EXT_IP_RESOLVER:-'whoami.cloudflare'}
+
+
 
 display_help() {
   cat <<EOF
 
-exec: ./dyndns.sh [ -z <Zone ID> | -Z <Zone Name> ] -r <Record ID> -n <Record Name>
+exec: ./dyndns.sh [ -z <Zone ID> | -Z <Zone Name> ] [-m <who-am-i|fritzbox|server>] -r <Record ID> -n <Record Name>
 
 parameters:
   -z  - Zone ID
@@ -26,6 +31,7 @@ parameters:
 optional parameters:
   -t  - TTL (Default: 60)
   -T  - Record type (Default: A)
+  -m  - Method for Extracting IP(Default:who-am-i)
 
 help:
   -h  - Show Help 
@@ -44,10 +50,15 @@ EOF
 logger() {
   echo ${1}: Record_Name: ${record_name} : ${2}
 }
-while getopts ":z:Z:r:n:t:T:h" opt; do
+
+
+
+
+while getopts ":z:Z:m:r:n:t:T:h" opt; do
   case "$opt" in
     z  ) zone_id="${OPTARG}";;
     Z  ) zone_name="${OPTARG}";;
+    m  ) ext_ip_resolver_type="${OPTARG}";;
     r  ) record_id="${OPTARG}";;
     n  ) record_name="${OPTARG}";;
     t  ) record_ttl="${OPTARG}";;
@@ -75,9 +86,7 @@ if [[ "${auth_api_token}" = "" ]]; then
 fi
 
 # get all zones
-zone_info=$(curl -s --location \
-          "https://dns.hetzner.com/api/v1/zones" \
-          --header 'Auth-API-Token: '${auth_api_token})
+zone_info=$(curl -s --location "https://dns.hetzner.com/api/v1/zones" --header "Auth-API-Token: $auth_api_token")
 
 # check if either zone_id or zone_name is correct
 if [[ "$(echo ${zone_info} | jq --raw-output '.zones[] | select(.name=="'${zone_name}'") | .id')" = "" && "$(echo ${zone_info} | jq --raw-output '.zones[] | select(.id=="'${zone_id}'") | .name')" = "" ]]; then
@@ -106,10 +115,50 @@ if [[ "${record_name}" = "" ]]; then
   exit 1
 fi
 
+get_ext_ip() {
+  local response=""
+  local at_part
+  if [[ "$1" = 'who-am-i' ]]; then
+    if [[ "$2" == '-6' ]]; then 
+      # ipv6
+      at_part='@2606:4700:4700::1111'
+    else
+      # ipv4
+      at_part='@1.1.1.1'
+    fi
+    response=$(dig "$2" ch TXT +short "${ext_ip_resolver}" "$at_part" | awk -F '"' '{print $2}')
+  elif [[ "$1" = 'server' ]]; then
+    # if you have a json backend on a private server, you can use that
+    # jq
+    local credentials
+    local credential_curl
+    local url
+    # get credentials from json file if there are any
+    credentials=$(jq -r .credentials "${localserver}")
+    credential_curl=""
+    # get server url from json
+    url=$(jq -r .server_url "${localserver}")
+    if [[ "$credentials" != "" ]]; then
+        credential_curl="-u ${credentials}"
+    fi
+
+    if [[ "$url" != "" ]]; then
+      response=$(curl ${credential_curl} "${url}" | jq -r '.REMOTE_ADDR')
+    else
+      logger Error "Missing server_url in ${localserver}"
+    fi
+  elif [[ "$1" = 'fritzbox' ]]; then
+    # use a bash file based on https://wiki.ubuntuusers.de/FritzBox/Skripte/
+    response=$(bash localservice.sh)
+  fi
+  echo "$response"
+}
+
+
 # get current public ip address
 if [[ "${record_type}" = "AAAA" ]]; then
   logger Info "Using IPv6, because AAAA was set as record type."
-  cur_pub_addr=$(dig -6 ch TXT +short whoami.cloudflare @2606:4700:4700::1111 | awk -F '"' '{print $2}')
+  cur_pub_addr=$(get_ext_ip "$ext_ip_resolver_type" '-6')
   if [[ "${cur_pub_addr}" = "" ]]; then
     logger Error "It seems you don't have a IPv6 public address."
     exit 1
@@ -118,7 +167,7 @@ if [[ "${record_type}" = "AAAA" ]]; then
   fi
 elif [[ "${record_type}" = "A" ]]; then
   logger Info "Using IPv4, because A was set as record type."
-  cur_pub_addr=$(dig -4 ch TXT +short whoami.cloudflare @1.1.1.1 | awk -F '"' '{print $2}')
+  cur_pub_addr=$(get_ext_ip "$ext_ip_resolver_type" '-4')
   if [[ "${cur_pub_addr}" = "" ]]; then
     logger Error "Apparently there is a problem in determining the public ip address."
     exit 1
@@ -129,6 +178,10 @@ else
   logger Error "Only record type \"A\" or \"AAAA\" are support for DynDNS."
   exit 1
 fi
+
+# Debugging TODO CNAME hetzner part
+#echo "$ext_ip_resolver_type"
+#exit 1 
 
 # get record id if not given as parameter
 if [[ "${record_id}" = "" ]]; then
