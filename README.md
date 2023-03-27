@@ -29,7 +29,7 @@ auth_api_token=${HETZNER_AUTH_API_TOKEN:-'<your-hetzner-dns-api-token>'}
 
 As soon as the token is deposited, the script can be called with the appropriate parameters. This allows several DynDNS records to be created in different zones. Optionally, the TTL and the record type can be specified. It is advisable to keep the TTL as low as possible, so that changed records are used as soon as possible.
 ```
-./dyndns.sh [ -z <Zone ID> | -Z <zone_name> ] [-r <Record ID>] -n <Record Name> [-t <TTL>] [-T <Record Type>]
+./dyndns.sh [ -z <Zone ID> | -Z <Zone Name> ] [-m <who-am-i|fritzbox|server>] -r <Record ID> -n <Record Name>
 ```
 
 To keep your DynDNS Records up to date, you have to create a cronjob that calls the script periodically. 
@@ -65,6 +65,8 @@ You can use the following enviroment variables.
 |HETZNER_RECORD_NAME    | dyn                              | The record name. '@' to set the record for the zone itself.     |
 |HETZNER_RECORD_TTL     | 120                              | The TTL of the record. Default(60)                              |
 |HETZNER_RECORD_TYPE    | AAAA                             | The record type. Either A for IPv4 or AAAA for IPv6. Default(A) |
+|HETZNER_EXT_IP_RESOLVER_TYPE    | who-am-i                             | The method that will be used to extract the public ip. Default is a request to "who-am-i" using "dig" |
+|LOCALSERVERFILE    | server.json                             | The config file, that is used for the method "server". Contains server-url and credentials(optional) |
 
 # Help
 Type `-h` to display help page.
@@ -72,25 +74,28 @@ Type `-h` to display help page.
 ./dyndns.sh -h
 ```
 ```
-exec: ./dyndns.sh -Z <Zone Name> -n <Record Name>
+exec: ./dyndns.sh [ -z <Zone ID> | -Z <Zone Name> ] [-m <who-am-i|fritzbox|server>] -r <Record ID> -n <Record Name>
 
 parameters:
   -z  - Zone ID
-  -Z  - Zone Name
+  -Z  - Zone name
   -r  - Record ID
   -n  - Record name
 
 optional parameters:
   -t  - TTL (Default: 60)
   -T  - Record type (Default: A)
+  -m  - Method for Extracting IP(Default:who-am-i)
 
 help:
   -h  - Show Help 
 
-example:
-  .exec: ./dyndns.sh -Z example.com -n dyn -T AAAA
-  .exec: ./dyndns.sh -z 98jFjsd8dh1GHasdf7a8hJG7 -r AHD82h347fGAF1 -n dyn
+requirements:
+curl, dig, jq and awk are required to run this script.
 
+example:
+  .exec: ./dyndns.sh -z 98jFjsd8dh1GHasdf7a8hJG7 -r AHD82h347fGAF1 -n dyn
+  .exec: ./dyndns.sh -Z example.com -n dyn -T AAAA
 ``` 
 # Additional stuff
 ## Get all Zones
@@ -99,6 +104,16 @@ If you want to get all zones in your account and check the desired zone ID.
 curl "https://dns.hetzner.com/api/v1/zones" -H \
 'Auth-API-Token: ${apitoken}' | jq
 ```
+
+## Choose Method for extracting your public ip with Parameter: -m
+
+There are 3 methods implemented right now:
+
+* **-m who-am-i**, via dig request to who-am-i, the external ip will be determined 
+* **-m server**, use your **own** server to determine the external ip. 
+  In ./server-backend  is a simple php script for the backend; it is also possible to protect the backend via .htaccess and using credentials (basic auth).
+* **-m fritzbox**, use fritzbox's functionality to determine the current external ip using [this script](https://wiki.ubuntuusers.de/FritzBox/Skripte/) from ubuntuusers.
+
 ## Get a record ID
 If you want to get a record ID manually you may use the following curl command.
 ```
