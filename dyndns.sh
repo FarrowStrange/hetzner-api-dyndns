@@ -116,6 +116,10 @@ if [[ "${record_name}" = "" ]]; then
 fi
 
 get_ext_ip() {
+  # get external ip using either 
+  # 1) who-am-i backend
+  # 2) own server backend using "ping.php"
+  # 3) fritzbox backend call
   local response=""
   local at_part
   if [[ "$1" = 'who-am-i' ]]; then
@@ -179,9 +183,6 @@ else
   exit 1
 fi
 
-# Debugging TODO CNAME hetzner part
-#echo "$ext_ip_resolver_type"
-#exit 1 
 
 # get record id if not given as parameter
 if [[ "${record_id}" = "" ]]; then
@@ -194,7 +195,7 @@ if [[ "${record_id}" = "" ]]; then
     logger Error "HTTP Response ${http_code} - Aborting run to prevent multipe records."
     exit 1
   else 
-    record_id=$(echo ${record_zone} | jq | sed '$d' | jq --raw-output '.records[] | select(.type == "'${record_type}'") | select(.name == "'${record_name}'") | .id')
+    record_id=$(echo ${record_zone} | jq . | sed '$d' | jq --raw-output ".records[] | select(.type == \"${record_type}\") | select(.name == \"${record_name}\") | .id")
   fi
 fi 
 
@@ -215,7 +216,7 @@ if [[ "${record_id}" = "" ]]; then
         }'
 else
 # check if update is needed
-  cur_dyn_addr=`curl -s "https://dns.hetzner.com/api/v1/records/${record_id}" -H 'Auth-API-Token: '${auth_api_token} | jq --raw-output '.record.value'`
+  cur_dyn_addr=$(curl -s "https://dns.hetzner.com/api/v1/records/${record_id}" -H 'Auth-API-Token: '${auth_api_token} | jq --raw-output '.record.value')
 
   logger Info "Currently set IP address: ${cur_dyn_addr}"
 
