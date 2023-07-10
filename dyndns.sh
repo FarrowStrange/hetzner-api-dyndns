@@ -26,9 +26,10 @@ parameters:
 optional parameters:
   -t  - TTL (Default: 60)
   -T  - Record type (Default: A)
+  -P  - IPv6 update type (Default: empty, empty or "prefix"). Defines if only prefix should get updated.
 
 help:
-  -h  - Show Help 
+  -h  - Show Help
 
 requirements:
 curl, dig, jq and awk are required to run this script.
@@ -44,7 +45,7 @@ EOF
 logger() {
   echo ${1}: Record_Name: ${record_name} : ${2}
 }
-while getopts ":z:Z:r:n:t:T:h" opt; do
+while getopts ":z:Z:r:n:t:T:P:h" opt; do
   case "$opt" in
     z  ) zone_id="${OPTARG}";;
     Z  ) zone_name="${OPTARG}";;
@@ -52,6 +53,7 @@ while getopts ":z:Z:r:n:t:T:h" opt; do
     n  ) record_name="${OPTARG}";;
     t  ) record_ttl="${OPTARG}";;
     T  ) record_type="${OPTARG}";;
+    P  ) ipv6_update_type="${OPTARG}";;
     h  ) display_help;;
     \? ) echo "Invalid option: -$OPTARG" >&2; exit 1;;
     :  ) echo "Missing option argument for -$OPTARG" >&2; exit 1;;
@@ -68,7 +70,7 @@ for cmd in curl dig jq awk; do
   fi
 done
 
-# Check if api token is set 
+# Check if api token is set
 if [[ "${auth_api_token}" = "" ]]; then
   logger Error "No Auth API Token specified."
   exit 1
@@ -125,7 +127,7 @@ elif [[ "${record_type}" = "A" ]]; then
   else
     logger Info "Current public IP address: ${cur_pub_addr}"
   fi
-else 
+else
   logger Error "Only record type \"A\" or \"AAAA\" are support for DynDNS."
   exit 1
 fi
@@ -140,10 +142,10 @@ if [[ "${record_id}" = "" ]]; then
   if [[ "${http_code}" != "200" ]]; then
     logger Error "HTTP Response ${http_code} - Aborting run to prevent multipe records."
     exit 1
-  else 
+  else
     record_id=$(echo ${record_zone} | jq | sed '$d' | jq --raw-output '.records[] | select(.type == "'${record_type}'") | select(.name == "'${record_name}'") | .id')
   fi
-fi 
+fi
 
 logger Info "Record_ID: ${record_id}"
 
@@ -165,13 +167,16 @@ else
   cur_dyn_addr=`curl -s "https://dns.hetzner.com/api/v1/records/${record_id}" -H 'Auth-API-Token: '${auth_api_token} | jq --raw-output '.record.value'`
 
   logger Info "Currently set IP address: ${cur_dyn_addr}"
-
+  if [[ "${ipv6_update_type}" = "prefix" ]]; then
+    cur_pub_addr=$(echo "${cur_pub_addr}" | grep -oE "([0-9a-f]{0,4}:){4}")$(echo "${cur_dyn_addr}" | grep -oE "([0-9a-f]{0,4}:){3}([0-9a-f]{0,4})$")
+    echo "${cur_pub_addr}"
+  fi
 # update existing record
   if [[ $cur_pub_addr == $cur_dyn_addr ]]; then
     logger Info "DNS record \"${record_name}\" is up to date - nothing to to."
     exit 0
   else
-    logger Info "DNS record \"${record_name}\" is no longer valid - updating record" 
+    logger Info "DNS record \"${record_name}\" is no longer valid - updating record"
     curl -s -X "PUT" "https://dns.hetzner.com/api/v1/records/${record_id}" \
          -H 'Content-Type: application/json' \
          -H 'Auth-API-Token: '${auth_api_token} \
@@ -189,3 +194,4 @@ else
     fi
   fi
 fi
+
