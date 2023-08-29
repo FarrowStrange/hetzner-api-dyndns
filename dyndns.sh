@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 # DynDNS Script for Hetzner DNS API by FarrowStrange
-# v1.2
+# v1.3
 
 # get OS environment variables
 auth_api_token=${HETZNER_AUTH_API_TOKEN:-''}
@@ -31,7 +31,8 @@ help:
   -h  - Show Help 
 
 requirements:
-curl, dig, jq and awk are required to run this script.
+  curl
+  jq
 
 example:
   .exec: ./dyndns.sh -z 98jFjsd8dh1GHasdf7a8hJG7 -r AHD82h347fGAF1 -n dyn
@@ -60,7 +61,7 @@ while getopts ":z:Z:r:n:t:T:h" opt; do
 done
 
 # Check if tools are installed
-for cmd in curl dig jq awk; do
+for cmd in curl jq; do
   if ! command -v "${cmd}" &> /dev/null; then
     logger Error "To run the script '${cmd}' is needed, but it seems not to be installed."
     logger Error "Please check 'https://github.com/FarrowStrange/hetzner-api-dyndns#install-tools' for more informations and try again."
@@ -109,7 +110,7 @@ fi
 # get current public ip address
 if [[ "${record_type}" = "AAAA" ]]; then
   logger Info "Using IPv6, because AAAA was set as record type."
-  cur_pub_addr=$(dig -6 ch TXT +short whoami.cloudflare @2606:4700:4700::1111 | awk -F '"' '{print $2}')
+  cur_pub_addr=$(curl -s6 https://ip.hetzner.com | grep -E '^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$')
   if [[ "${cur_pub_addr}" = "" ]]; then
     logger Error "It seems you don't have a IPv6 public address."
     exit 1
@@ -118,7 +119,7 @@ if [[ "${record_type}" = "AAAA" ]]; then
   fi
 elif [[ "${record_type}" = "A" ]]; then
   logger Info "Using IPv4, because A was set as record type."
-  cur_pub_addr=$(dig -4 ch TXT +short whoami.cloudflare @1.1.1.1 | awk -F '"' '{print $2}')
+  cur_pub_addr=$(curl -s4 https://ip.hetzner.com | grep -E '^([0-9]+(\.|$)){4}')
   if [[ "${cur_pub_addr}" = "" ]]; then
     logger Error "Apparently there is a problem in determining the public ip address."
     exit 1
@@ -136,7 +137,7 @@ if [[ "${record_id}" = "" ]]; then
                  --request GET 'https://dns.hetzner.com/api/v1/records?zone_id='${zone_id} \
                  --header 'Auth-API-Token: '${auth_api_token})
 
-  http_code=$(echo ${record_zone} | awk '{print $(NF)}')
+  http_code=$(echo "${record_zone}" | tail -n 1 )
   if [[ "${http_code}" != "200" ]]; then
     logger Error "HTTP Response ${http_code} - Aborting run to prevent multipe records."
     exit 1
