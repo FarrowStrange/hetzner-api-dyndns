@@ -11,9 +11,7 @@ https://dns.hetzner.com/api-docs/
 ## Install tools
 
 - [`curl`](https://curl.se/)
-- [`dig`](https://gitlab.isc.org/isc-projects/bind9/-/tree/main/bin/dig) (part of [BIND9](https://gitlab.isc.org/isc-projects/bind9)): usually packaged as `dnsutils` or `bind-tools`
 - [`jq`](https://stedolan.github.io/jq/): [install](https://stedolan.github.io/jq/download/)
-- [`awk`](https://en.wikipedia.org/wiki/AWK): For example in the form of [gawk (Gnu Awk)](https://www.gnu.org/software/gawk/manual/gawk.html)
 
 ## Generate Access Token
 First, a new access token must be created in the [Hetzner DNS Console](https://dns.hetzner.com/). This should be copied immediately, because for security reasons it will not be possible to display the token later. But you can generate as many tokens as you like.
