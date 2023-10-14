@@ -142,7 +142,7 @@ if [[ "${record_id}" = "" ]]; then
     logger Error "HTTP Response ${http_code} - Aborting run to prevent multipe records."
     exit 1
   else 
-    record_id=$(echo ${record_zone} | jq | sed '$d' | jq --raw-output '.records[] | select(.type == "'${record_type}'") | select(.name == "'${record_name}'") | .id')
+    record_id=$(echo ${record_zone} | jq . -M | sed '$d' | jq --raw-output '.records[] | select(.type == "'${record_type}'") | select(.name == "'${record_name}'") | .id')
   fi
 fi 
 
