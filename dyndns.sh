@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # DynDNS Script for Hetzner DNS API by FarrowStrange
 # v1.3
 
