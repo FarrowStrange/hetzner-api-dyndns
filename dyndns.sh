@@ -169,7 +169,7 @@ else
 
 # update existing record
   if [[ $cur_pub_addr == $cur_dyn_addr ]]; then
-    logger Info "DNS record \"${record_name}\" is up to date - nothing to to."
+    logger Info "DNS record \"${record_name}\" is up to date - nothing to do."
     exit 0
   else
     logger Info "DNS record \"${record_name}\" is no longer valid - updating record" 
