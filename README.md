@@ -81,6 +81,7 @@ parameters:
 optional parameters:
   -t  - TTL (Default: 60)
   -T  - Record type (Default: A)
+  -i  - IP address (instead of autodetecting from ip.hetzner.com)
 
 help:
   -h  - Show Help 

@@ -11,6 +11,7 @@ zone_id=${HETZNER_ZONE_ID:-''}
 record_name=${HETZNER_RECORD_NAME:-''}
 record_ttl=${HETZNER_RECORD_TTL:-'60'}
 record_type=${HETZNER_RECORD_TYPE:-'A'}
+record_ip=''
 
 display_help() {
   cat <<EOF
@@ -26,9 +27,10 @@ parameters:
 optional parameters:
   -t  - TTL (Default: 60)
   -T  - Record type (Default: A)
+  -i  - IP address (instead of autodetecting from ip.hetzner.com)
 
 help:
-  -h  - Show Help 
+  -h  - Show Help
 
 requirements:
   curl
@@ -45,7 +47,7 @@ EOF
 logger() {
   echo ${1}: Record_Name: ${record_name} : ${2}
 }
-while getopts ":z:Z:r:n:t:T:h" opt; do
+while getopts ":z:Z:r:n:t:T:i:h" opt; do
   case "$opt" in
     z  ) zone_id="${OPTARG}";;
     Z  ) zone_name="${OPTARG}";;
@@ -53,6 +55,7 @@ while getopts ":z:Z:r:n:t:T:h" opt; do
     n  ) record_name="${OPTARG}";;
     t  ) record_ttl="${OPTARG}";;
     T  ) record_type="${OPTARG}";;
+    i  ) record_ip="${OPTARG}";;
     h  ) display_help;;
     \? ) echo "Invalid option: -$OPTARG" >&2; exit 1;;
     :  ) echo "Missing option argument for -$OPTARG" >&2; exit 1;;
@@ -69,7 +72,7 @@ for cmd in curl jq; do
   fi
 done
 
-# Check if api token is set 
+# Check if api token is set
 if [[ "${auth_api_token}" = "" ]]; then
   logger Error "No Auth API Token specified."
   exit 1
@@ -110,23 +113,33 @@ fi
 # get current public ip address
 if [[ "${record_type}" = "AAAA" ]]; then
   logger Info "Using IPv6, because AAAA was set as record type."
-  cur_pub_addr=$(curl -s6 https://ip.hetzner.com | grep -E '^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$')
-  if [[ "${cur_pub_addr}" = "" ]]; then
-    logger Error "It seems you don't have a IPv6 public address."
-    exit 1
+  if [[ "${record_ip}" != "" ]]; then
+    cur_pub_addr="${record_ip}"
+    logger Info "Using IP address from parameter: ${cur_pub_addr}"
   else
-    logger Info "Current public IP address: ${cur_pub_addr}"
+    cur_pub_addr=$(curl -s6 https://ip.hetzner.com | grep -E '^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$')
+    if [[ "${cur_pub_addr}" = "" ]]; then
+      logger Error "It seems you don't have a IPv6 public address."
+      exit 1
+    else
+      logger Info "Current public IP address: ${cur_pub_addr}"
+    fi
   fi
 elif [[ "${record_type}" = "A" ]]; then
   logger Info "Using IPv4, because A was set as record type."
-  cur_pub_addr=$(curl -s4 https://ip.hetzner.com | grep -E '^([0-9]+(\.|$)){4}')
-  if [[ "${cur_pub_addr}" = "" ]]; then
-    logger Error "Apparently there is a problem in determining the public ip address."
-    exit 1
+  if [[ "${record_ip}" != "" ]]; then
+    cur_pub_addr="${record_ip}"
+    logger Info "Using IP address from parameter: ${cur_pub_addr}"
   else
-    logger Info "Current public IP address: ${cur_pub_addr}"
+    cur_pub_addr=$(curl -s4 https://ip.hetzner.com | grep -E '^([0-9]+(\.|$)){4}')
+    if [[ "${cur_pub_addr}" = "" ]]; then
+      logger Error "Apparently there is a problem in determining the public ip address."
+      exit 1
+    else
+      logger Info "Current public IP address: ${cur_pub_addr}"
+    fi
   fi
-else 
+else
   logger Error "Only record type \"A\" or \"AAAA\" are support for DynDNS."
   exit 1
 fi
@@ -141,10 +154,10 @@ if [[ "${record_id}" = "" ]]; then
   if [[ "${http_code}" != "200" ]]; then
     logger Error "HTTP Response ${http_code} - Aborting run to prevent multipe records."
     exit 1
-  else 
+  else
     record_id=$(echo ${record_zone} | jq | sed '$d' | jq --raw-output '.records[] | select(.type == "'${record_type}'") | select(.name == "'${record_name}'") | .id')
   fi
-fi 
+fi
 
 logger Info "Record_ID: ${record_id}"
 
@@ -172,7 +185,7 @@ else
     logger Info "DNS record \"${record_name}\" is up to date - nothing to to."
     exit 0
   else
-    logger Info "DNS record \"${record_name}\" is no longer valid - updating record" 
+    logger Info "DNS record \"${record_name}\" is no longer valid - updating record"
     curl -s -X "PUT" "https://dns.hetzner.com/api/v1/records/${record_id}" \
          -H 'Content-Type: application/json' \
          -H 'Auth-API-Token: '${auth_api_token} \
