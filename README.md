@@ -1,10 +1,10 @@
 # Hetzner API DynDNS
 
-A small script to dynamically update DNS records using the Hetzner DNS-API. Feel free to propose changes.
+A small script to dynamically update DNS records using the Hetzner Console-API. Feel free to propose changes.
 
 **Hetzner DNS API Doc:**
 
-https://dns.hetzner.com/api-docs/
+https://docs.hetzner.cloud/reference/cloud#dns
 
 # Preparations
 
@@ -14,7 +14,7 @@ https://dns.hetzner.com/api-docs/
 - [`jq`](https://stedolan.github.io/jq/): [install](https://stedolan.github.io/jq/download/)
 
 ## Generate Access Token
-First, a new access token must be created in the [Hetzner DNS Console](https://dns.hetzner.com/). This should be copied immediately, because for security reasons it will not be possible to display the token later. But you can generate as many tokens as you like.
+First, a new access token must be created in the [Hetzner Console](https://console.hetzner.com/) for the project your zone lives in. This should be copied immediately, because for security reasons it will not be possible to display the token later. But you can generate as many tokens as you like.
 
 # Usage
 You store your Access Token either in the script or set it as an OS environment variable. To store it in the script replace `<your-hetzner-dns-api-token>` in the following line in the script.
@@ -94,29 +94,29 @@ example:
 ## Get all Zones
 If you want to get all zones in your account and check the desired zone ID.
 ```
-curl "https://dns.hetzner.com/api/v1/zones" -H \
-'Auth-API-Token: ${apitoken}' | jq
+curl "https://api.hetzner.cloud/v1/zones" -H \
+'Authorization: Bearer ${apitoken}' | jq
 ```
 ## Get a record ID
-If you want to get a record ID manually you may use the following curl command.
-```
-curl -s --location \
-    --request GET 'https://dns.hetzner.com/api/v1/records?zone_id='${zone_id} \
-    --header 'Auth-API-Token: '${apitoken} | \
-    jq --raw-output '.records[] | select(.type == "'${record_type}'") | select(.name == "'{record_name}'") | .id'
-```
+Record IDs are simply set to string: `${record_name}/${record_type}`
+So no need to manually get an ID.
+
 ## Add Record manually
 Use the previously obtained zone ID to create a dns record. 
 In the output you get the record ID. This is needed for the script and should therefore be noted.
 ```
-curl -X "POST" "https://dns.hetzner.com/api/v1/records" \
+curl -X "POST" "https://api.hetzner.cloud/v1/zones/${zone_id}/rrsets" \
      -H 'Content-Type: application/json' \
-     -H 'Auth-API-Token: ${apitoken}' \
+     -H 'Authorization: Bearer ${apitoken}' \
      -d $'{
-  "value": "${yourpublicip}",
   "ttl": 60,
-  "type": "A",
-  "name": "dyn",
-  "zone_id": "${zoneID}"
+  "name": "'${record_name}'",
+  "type": "'${record_type}'",
+  "records": [{
+    "value": "'${yourpublicip}'"
+  }]
+  "labels": {
+    "dyndns": ""
+  }
 }'
 ```
